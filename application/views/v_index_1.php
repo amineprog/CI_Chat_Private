@@ -210,7 +210,7 @@
 
         </style>
     </head>
-    <body>
+    <body ng-controller="MsgListCtrl">
         <nav class="navbar navbar-inverse navbar-fixed-top">
             <div class="container">
                 <div class="navbar-header">
@@ -264,7 +264,7 @@
                 <!--=========================================================-->
                 <!-- selected chat -->
                 <div class="col-md-8 bg-white ">
-                    <div class="chat-message" style="max-height: 850px;" ng-controller="MsgListCtrl">
+                    <div class="chat-message" style="max-height: 850px;">
                         <p>{{currentConversation}}</p>
                         <ul class="chat">
                             <li class="left clearfix" ng-repeat="message in messages">
@@ -285,9 +285,9 @@
                     </div>
                     <div class="chat-box bg-white">
                         <div class="input-group">
-                            <input class="form-control border no-shadow no-rounded" placeholder="Type your message here">
+                            <input class="form-control border no-shadow no-rounded" ng-model="msgText" placeholder="Type your message here" required>
                             <span class="input-group-btn">
-                                <button class="btn btn-success no-rounded" type="button">Send</button>
+                                <button class="btn btn-success no-rounded" ng-click="pushMsg()" type="button">Send</button>
                             </span>
                         </div><!-- /input-group -->	
                     </div>            
@@ -311,9 +311,20 @@
                                                 $scope.currentConversation = <?= $currentConversation ?>;
                                                 $scope.start = 0;
                                                 $scope.limit = 20;
+                                                $scope.msgText = "";
                                                 $http.get('<?= site_url('App/getMsg/?start=0&limit=20&id_c=1') ?>').success(function (data) {
                                                     $scope.messages = data;
                                                 });
+                                                $scope.pushMsg = function () {
+                                                    var request = $http.post("<?= site_url('App/pushMsg') ?>", {msg: $scope.msgText}, {headers: {'Content-Type': 'application/json'}});
+                                                    request.success(
+                                                            function (html) {
+                                                                $scope.msgText = "";
+                                                                console.log(html);
+                                                            }
+                                                    );
+
+                                                };
                                             });
         </script>
     </body>
