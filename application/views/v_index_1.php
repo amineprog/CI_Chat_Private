@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" ng-app="chatprivateApp">
+<html lang="fr">
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -210,7 +210,7 @@
 
         </style>
     </head>
-    <body ng-controller="MsgListCtrl">
+    <body>
         <nav class="navbar navbar-inverse navbar-fixed-top">
             <div class="container">
                 <div class="navbar-header">
@@ -266,28 +266,15 @@
                 <div class="col-md-8 bg-white ">
                     <div class="chat-message" style="max-height: 850px;">
                         <p>{{currentConversation}}</p>
-                        <ul class="chat">
-                            <li class="left clearfix" ng-repeat="message in messages">
-                                <span class="chat-img pull-left">
-                                    <img src="http://bootdey.com/img/Content/user_3.jpg" alt="User Avatar">
-                                </span>
-                                <div class="chat-body clearfix">
-                                    <div class="header">
-                                        <strong class="primary-font">{{message.first_name}}</strong>
-                                        <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 12 mins ago</small>
-                                    </div>
-                                    <p>
-                                        {{message.reply}}
-                                    </p>
-                                </div>
-                            </li>
+                        <ul class="chat" id="conv">
+
                         </ul>
                     </div>
                     <div class="chat-box bg-white">
                         <div class="input-group">
-                            <input class="form-control border no-shadow no-rounded" ng-model="msgText" placeholder="Type your message here" required>
+                            <input class="form-control border no-shadow no-rounded" id="msgText" placeholder="" required>
                             <span class="input-group-btn">
-                                <button class="btn btn-success no-rounded" ng-click="pushMsg()" type="button">Send</button>
+                                <button class="btn btn-success no-rounded" type="button" id="btnSend">Envoyer</button>
                             </span>
                         </div><!-- /input-group -->	
                     </div>            
@@ -300,32 +287,64 @@
         <script src="<?= site_url('assets/bootstrap-3.3.6-dist/js/bootstrap.min.js') ?>" type="text/javascript"></script>
         <script src="<?= site_url('assets/scripts/jquery.slimscroll.min.js') ?>" type="text/javascript"></script>
         <script type="text/javascript">
-                                            $(document).ready(function () {
-                                                $(".chat-message").slimScroll({
-                                                    height: '800px',
-                                                    start: 'bottom'
-                                                });
-                                            });
-                                            var phonecatApp = angular.module('chatprivateApp', []);
-                                            phonecatApp.controller('MsgListCtrl', function ($scope, $http) {
-                                                $scope.currentConversation = <?= $currentConversation ?>;
-                                                $scope.start = 0;
-                                                $scope.limit = 20;
-                                                $scope.msgText = "";
-                                                $http.get('<?= site_url('App/getMsg/?start=0&limit=20&id_c=1') ?>').success(function (data) {
-                                                    $scope.messages = data;
-                                                });
-                                                $scope.pushMsg = function () {
-                                                    var request = $http.post("<?= site_url('App/pushMsg') ?>", {msg: $scope.msgText}, {headers: {'Content-Type': 'application/json'}});
-                                                    request.success(
-                                                            function (html) {
-                                                                $scope.msgText = "";
-                                                                console.log(html);
-                                                            }
-                                                    );
+                                var id_c =<?= $currentConversation ?>;
+                                var start = 0;
+                                var limit = 50;
+                                $(document).ready(function () {                                    
+                                    $(".chat-message").slimScroll({
+                                        height: '800px',
+                                        start: 'bottom'
+                                    });
+                                    $("#btnSend").click(function () {
+                                        var msg=$("#msgText").val();
+                                        if(msg.length>0){
+                                            sendMsg(msg);   
+                                            $("#msgText").val("");
+                                        }
+                                    });
+                                getMsg();
+                                setInterval("getMsg();", 2000); 
+                                });
+                                function getMsg() {
+                                    $.ajax({
+                                        url: '<?= site_url('App/getMsg') ?>',
+                                        type: 'POST',
+                                        dataType: 'Json',
+                                        data: {id_c: id_c, start: start, limit: limit},
+                                        success: function (code_html, statut) {
+                                            if (code_html.count > 0) {
+                                                start += code_html.count;
+                                                $("#conv").append(code_html.str);
+                                            }                                          
 
-                                                };
-                                            });
+                                        },
+                                        error: function (resultat, statut, erreur) {
+                                            console.log(erreur);
+                                            
+                                        },
+                                        complete: function (resultat, statut) {
+                                            
+                                        }
+                                    });
+                                }
+                                function sendMsg(msg) {
+                                    $.ajax({
+                                        url: '<?= site_url('App/pushMsg') ?>',
+                                        type: 'POST',
+                                        dataType: 'Json',
+                                        data: {id_c: id_c, msg: msg},
+                                        success: function (code_html, statut) {
+                                           console.log(code_html);
+
+                                        },
+                                        error: function (resultat, statut, erreur) {
+                                            console.log(erreur);
+                                        },
+                                        complete: function (resultat, statut) {
+                                            console.log(statut);
+                                        }
+                                    });
+                                }
         </script>
     </body>
 </html>

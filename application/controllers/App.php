@@ -39,16 +39,41 @@ class App extends MY_Controller {
     }
 
     public function getMsg() {
-        $id = $this->input->get('id_c');
-        $start = $this->input->get('start');
-        $limit = $this->input->get('limit');
-        echo json_encode($this->getConversation(intval($id), intval($start), intval($limit))->result());
+        $id = $this->input->post('id_c');
+        $start = $this->input->post('start');
+        $limit = $this->input->post('limit');
+        $data = $this->getConversation(intval($id), intval($start), intval($limit))->result();
+        $str = "";
+        foreach ($data as $dt) {
+            $str .= "    <li class='left clearfix' ng-repeat='message in messages'>
+                                <span class='chat-img pull-left'>
+                                    <img src='http://bootdey.com/img/Content/user_3.jpg' alt='User Avatar'>
+                                </span>
+                                <div class='chat-body clearfix'>
+                                    <div class='header'>
+                                        <strong class='primary-font'>{{message.first_name}}</strong>
+                                        <small class='pull-right text-muted'><i class='fa fa-clock-o'></i> 12 mins ago</small>
+                                    </div>
+                                    <p>
+                                        {{message.reply}}
+                                    </p>
+                                </div>
+                            </li>";
+        }
+        $out['str'] = $str;
+        $out['count'] = count($data);
+        echo json_encode($out);
     }
 
     public function pushMsg() {
-        $postdata = file_get_contents("php://input");
-        $request = json_decode($postdata);
-        echo json_encode($request->msg);
+        //$postdata = file_get_contents("php://input");
+        $msg = $this->input->post('msg');
+        $id_c = $this->input->post('id_c');
+        if (is_numeric($id_c) && strlen($msg) > 0) {
+            
+        }
+        //$request = json_decode($postdata);
+        echo json_encode($postdata);
     }
 
 }
